@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="reset.css">
+<link rel="stylesheet" href="style.css">
+<title>Firebase_version9_RealtimeDB(G'sACADEMY初学者用サンプル)</title>
+</head>
+<body>
+
+<!-- コンテンツ表示画面 -->
+
+<div class="container">
+    <div class="title">らいん</div>
+    <div id="output" style="overflow:scroll ; height:600px;"></div>
+
+    
+    <div class="name"> 名前：<input type="text" id="uname"></div>
+    <div class="text">
+        <textarea id="text" cols="50" rows="1" class="text-area"></textarea>
+        <button id="send" class="text-send">送信</button>
+    </div>
+    
+</div>
+<!--/ コンテンツ表示画面 -->
+
+
+
+<!-- JQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- JQuery -->
+
+
+<!--** 以下Firebase **-->
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
+    import { getDatabase, ref, push, set, onChildAdded, remove, onChildRemoved } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+        apiKey: "AIzaSyC4XnprWSGZ-Df4GIC0diGkzsx8vl6Jdhs",
+        authDomain: "gschat-d0dbd.firebaseapp.com",
+        projectId: "gschat-d0dbd",
+        storageBucket: "gschat-d0dbd.appspot.com",
+        messagingSenderId: "434600084831",
+        appId: "1:434600084831:web:62976b5202a6e7023de2ea",
+        measurementId: "G-V7SY5M37DY"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig); //firebaseへアクセス
+    const analytics = getAnalytics(app);
+    const db = getDatabase(app); //リアルタイムデータベースへ接続
+    const dbRef = ref(db,"chat"); //chatへ
+
+
+
+
+    // 日時の取得
+    function day(){
+        const now = new Date();
+        const month = now.getMonth();
+        const date = now.getDate();
+        const hour = now.getHours();
+        const min = now.getMinutes();
+        const mdhm = `${month + 1}/${date} ${hour}:${min}`
+        return mdhm;
+    }
+    
+    
+
+    // 送信ボタン
+    $("#send").on("click",function(){
+        let m = day();
+        const msg = {
+            uname: $("#uname").val(),
+            text: $("#text").val(),
+            m
+        }
+        const newPostRef = push(dbRef); //データを一意なものにするための記述
+        set(newPostRef,msg);
+        $("#text").val("");
+        
+    });
+
+    // エンターキー送信
+    $("#text").on("keydown",function(e){
+        let m = day();
+
+        if(e.keyCode == 13){
+            const msg = {
+            uname: $("#uname").val(),
+            text: $("#text").val(),
+            m
+            }
+            const newPostRef = push(dbRef); //データを一意なものにするための記述
+            set(newPostRef,msg);
+            $("#text").val("")
+        }
+    });
+
+    // アウトプットエリアへ表示
+    onChildAdded(dbRef,function(data){
+        const msg = data.val();
+        const key = data.key;
+        if(msg.uname == "北出" || msg.uname == "北出泰一" || msg.uname == "北出　泰一"){
+        let h = '<div class="mychat">';
+                h += '<div class="mychat-date">';
+                h += msg.m;
+                h += '</div>';
+                h += '<div class="mychat-nt">'
+                    // h += '<div class="mychat-name">';
+                    // h += msg.uname;
+                    // h += '</div>';
+                    h += '<div class="mychat-text">'
+                    h += msg.text;
+                    h += '</div>'
+                h += '</div>'
+            h += '</div>'
+            $("#output").append(h);
+        }else{
+            let h = '<div class="otherchat">';
+
+                    h += '<div class="otherchat-nt">'
+                        h += '<div class="otherchat-name">';
+                        h += msg.uname;
+                        h += '</div>';
+
+                        h += '<div class="otherchat-text">'
+                        h += msg.text;
+                        h += '</div>'
+                    h += '</div>'
+
+                    h += '<div class="otherchat-date">';
+                    h += msg.m;
+                    h += '</div>';
+                h += '</div>'
+            $("#output").append(h);
+            
+        }
+    });
+
+
+</script>
+
+
+
+</body>
+</html>
